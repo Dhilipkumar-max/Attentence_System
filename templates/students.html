@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Student Details</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .student-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 1rem;
+        }
+        .student-table th, .student-table td {
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            text-align: left;
+        }
+        .student-table th {
+            background: #2c3e50;
+            color: white;
+        }
+        .student-table tr:nth-child(even) {
+            background: #f8f9fa;
+        }
+        .year-section {
+            margin-bottom: 2rem;
+            display: none; /* Hidden by default, shown via JS */
+        }
+        .year-section.visible {
+            display: block; /* Show when selected */
+        }
+        .date-picker-container {
+            margin-bottom: 1rem;
+        }
+        .date-picker-container input[type="date"] {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+        }
+        .header-controls {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .selectors-container {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+        .year-selector-container, .status-selector-container {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .year-selector-container select, .status-selector-container select {
+            padding: 0.5rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 1rem;
+            background: white;
+            cursor: pointer;
+        }
+        .year-selector-container select:focus, .status-selector-container select:focus {
+            outline: none;
+            border-color: #1abc9c;
+            box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.1);
+        }
+        .student-row {
+            display: none; /* Hidden by default, shown via JS */
+        }
+        .student-row.visible {
+            display: table-row; /* Show when matches filters */
+        }
+        .no-data-message {
+            padding: 1rem;
+            text-align: center;
+            color: #666;
+        }
+        .search-container {
+            position: relative;
+            width: 250px;
+        }
+        .search-container input {
+            width: 100%;
+            padding: 0.5rem 2rem 0.5rem 1rem;
+            border: 1px solid #ddd;
+            border-radius: 20px;
+            font-size: 0.9rem;
+        }
+        .search-icon {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #2c3e50;
+            cursor: pointer;
+        }
+        .search-container input:focus {
+            outline: none;
+            border-color: #1abc9c;
+            box-shadow: 0 0 0 2px rgba(26, 188, 156, 0.1);
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <nav class="sidenav">
+            <div class="logo-container">
+                <h1>Attendance System</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-qrcode"></i> Mark Attendance</a></li>
+                <li><a href="/download-menu"><i class="fas fa-download"></i> Download</a></li>
+                <li><a href="/dashboard"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+                <li><a href="/students" class="active"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="/report"><i class="fas fa-exclamation-triangle"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <header class="top-bar">
+                <div class="header-controls">
+                    <h2>Student Details by Year</h2>
+                    <div class="selectors-container">
+                        <div class="search-container">
+                            <input type="text" id="searchInput" placeholder="Search by name or reg no..." onkeyup="applyFilters()">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <div class="year-selector-container">
+                            <label for="year_selector">Select Year: </label>
+                            <select id="year_selector" onchange="applyFilters()">
+                                <option value="All">All</option>
+                                {% if grouped_students %}
+                                    {% for year in grouped_students.keys() %}
+                                    <option value="{{ year }}">{{ year }}</option>
+                                    {% endfor %}
+                                {% endif %}
+                            </select>
+                        </div>
+                        <div class="status-selector-container">
+                            <label for="status_selector">Attendance: </label>
+                            <select id="status_selector" onchange="applyFilters()">
+                                <option value="All">All</option>
+                                <option value="Present">Present</option>
+                                <option value="Absent">Absent</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </header>
+            <main>
+                <section class="card">
+                    <div class="date-picker-container">
+                        <label for="date_picker">Select Date: </label>
+                        <input type="date" id="date_heading" value="{{ selected_date }}" onchange="updateAttendance()">
+                    </div>
+                    {% if grouped_students %}
+                        {% for year, students in grouped_students.items() %}
+                        <div class="year-section" data-year="{{ year }}">
+                            <h3>{{ year }}</h3>
+                            <table class="student-table">
+                                <thead>
+                                    <tr>
+                                        <th>S.No</th>
+                                        <th>Roll No</th>
+                                        <th>Name</th>
+                                        <th>Year</th>
+                                        <th>Room Number</th>
+                                        <th>Attendance Status</th>
+                                        <th>Time</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for student in students %}
+                                    <tr class="student-row" data-year="{{ student.year }}" data-status="{{ student.status }}" data-name="{{ student.name|lower }}" data-roll="{{ student.roll|lower }}">
+                                        <td>{{ loop.index }}</td>
+                                        <td>{{ student.roll }}</td>
+                                        <td>{{ student.name }}</td>
+                                        <td>{{ student.year }}</td>
+                                        <td>{{ student.room_number or '' }}</td>
+                                        <td>{{ student.status }}</td>
+                                        <td>{{ student.time or '' }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="no-data-message">
+                            No student data available. Please ensure the master list is properly set up.
+                        </div>
+                   +
+
+                    {% endif %}
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        function updateAttendance() {
+            const date = document.getElementById('date_heading').value;
+            if (date) {
+                window.location.href = `/students?date=${date}`;
+            }
+        }
+
+        function applyFilters() {
+            const selectedYear = document.getElementById('year_selector').value;
+            const selectedStatus = document.getElementById('status_selector').value;
+            const searchQuery = document.getElementById('searchInput').value.toLowerCase();
+            const yearSections = document.getElementsByClassName('year-section');
+            const studentRows = document.getElementsByClassName('student-row');
+
+            let anyVisibleRows = false;
+            for (let section of yearSections) {
+                const year = section.getAttribute('data-year');
+                const isYearMatch = selectedYear === 'All' || year === selectedYear;
+                section.classList.toggle('visible', isYearMatch);
+
+                if (isYearMatch) {
+                    const rows = section.querySelectorAll('.student-row');
+                    for (let row of rows) {
+                        const status = row.getAttribute('data-status');
+                        const name = row.getAttribute('data-name');
+                        const roll = row.getAttribute('data-roll');
+                        const isStatusMatch = selectedStatus === 'All' || status === selectedStatus;
+                        const isSearchMatch = !searchQuery || name.includes(searchQuery) || roll.includes(searchQuery);
+                        const isVisible = isStatusMatch && isSearchMatch;
+                        row.classList.toggle('visible', isVisible);
+                        if (isVisible) {
+                            anyVisibleRows = true;
+                        }
+                    }
+                }
+            }
+
+            if (!anyVisibleRows) {
+                for (let section of yearSections) {
+                    section.classList.remove('visible');
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            applyFilters();
+        });
+    </script>
+</body>
+</html>

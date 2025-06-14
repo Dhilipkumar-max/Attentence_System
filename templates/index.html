@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance System</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/html5-qrcode"></script>
+</head>
+<body>
+    <div class="layout">
+        <nav class="sidenav">
+            <div class="logo-container">
+                <h1>Attendance System</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/" class="active"><i class="fas fa-qrcode"></i> Mark Attendance</a></li>
+                <li><a href="/download-menu"><i class="fas fa-download"></i> Download</a></li>
+                <li><a href="/dashboard"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+                <li><a href="/students"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="/report"><i class="fas fa-exclamation-triangle"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <header class="top-bar">
+                <h2>Mark Attendance</h2>
+            </header>
+            <main>
+                <section class="card">
+                    <div class="attendance-form">
+                        <input type="text" id="reg_no_input" placeholder="Scan or enter registration number" autofocus>
+                        <button onclick="markAttendance()">Mark Attendance</button>
+                    </div>
+                    <div id="result" class="result-message"></div>
+                </section>
+                <section class="scanner-section">
+                    <button id="startButton" class="scan-button">
+                        <i class="fas fa-camera"></i> Start Scanner
+                    </button>
+                    <button id="stopButton" class="scan-button" style="display: none;">
+                        <i class="fas fa-stop"></i> Stop Scanner
+                    </button>
+                    <div id="reader"></div>
+                    <div id="scanned-result" class="scanned-result"></div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script>
+        let html5QrcodeScanner = null;
+
+        document.getElementById('startButton').addEventListener('click', startScanning);
+        document.getElementById('stopButton').addEventListener('click', stopScanning);
+
+        function startScanning() {
+            document.getElementById('startButton').style.display = 'none';
+            document.getElementById('stopButton').style.display = 'inline-flex';
+            
+            html5QrcodeScanner = new Html5Qrcode("reader");
+            html5QrcodeScanner.start(
+                { facingMode: "environment" },
+                {
+                    fps: 10,
+                    qrbox: { width: 250, height: 250 }
+                },
+                (decodedText) => {
+                    document.getElementById('reg_no_input').value = decodedText;
+                    document.getElementById('scanned-result').textContent = `Scanned: ${decodedText}`;
+                    markAttendance();
+                },
+                (error) => {
+                    // Handle errors silently
+                }
+            ).catch((err) => {
+                console.error("Error starting scanner:", err);
+            });
+        }
+
+        function stopScanning() {
+            if (html5QrcodeScanner) {
+                html5QrcodeScanner.stop().then(() => {
+                    document.getElementById('startButton').style.display = 'inline-flex';
+                    document.getElementById('stopButton').style.display = 'none';
+                    document.getElementById('scanned-result').textContent = '';
+                });
+            }
+        }
+
+        function markAttendance() {
+            const reg_no = document.getElementById('reg_no_input').value;
+            if (!reg_no) {
+                showResult('Please enter a registration number', 'error');
+                return;
+            }
+
+            fetch('/scan', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ reg_no: reg_no })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    showResult('Attendance marked successfully!', 'success');
+                } else if (data.status === 'already_marked') {
+                    showResult('Attendance already marked for today', 'error');
+                } else {
+                    showResult(data.message || 'Error marking attendance', 'error');
+                }
+                document.getElementById('reg_no_input').value = '';
+                document.getElementById('scanned-result').textContent = '';
+                document.getElementById('reg_no_input').focus();
+            })
+            .catch(error => {
+                showResult('Error marking attendance', 'error');
+            });
+        }
+
+        function showResult(message, type) {
+            const resultDiv = document.getElementById('result');
+            resultDiv.textContent = message;
+            resultDiv.className = `result-message ${type}`;
+            setTimeout(() => {
+                resultDiv.className = 'result-message';
+            }, 3000);
+        }
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93b13a71493053f8',t:'MTc0NjQ1ODQ5My4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

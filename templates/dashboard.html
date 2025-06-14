@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Attendance Dashboard</title>
+    <link rel="stylesheet" href="/static/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="layout">
+        <!-- Side Navigation -->
+        <nav class="sidenav">
+            <div class="logo-container">
+                <h1>Attendance System</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-qrcode"></i> Mark Attendance</a></li>
+                <li><a href="/download-menu"><i class="fas fa-download"></i> Download</a></li>
+                <li><a href="/dashboard" class="active"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+                <li><a href="/students"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="/report"><i class="fas fa-exclamation-triangle"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <header class="top-bar">
+                <h2>Dashboard</h2>
+            </header>
+            
+            <main>
+                <section class="card">
+                    <h3>Today's Attendance</h3>
+                    <div class="stats">
+                        <div class="stat-item">
+                            <h4>Total Students</h4>
+                            <p>{{ stats.total_students }}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Present Today</h4>
+                            <p>{{ stats.present_today }}</p>
+                        </div>
+                        <div class="stat-item">
+                            <h4>Absent Today</h4>
+                            <p>{{ stats.absent_today }}</p>
+                        </div>
+                    </div>
+                    <div class="chart-container">
+                        <canvas id="attendanceChart"></canvas>
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <!-- Font Awesome for icons -->
+    <!-- Replace the old Font Awesome script with this one -->
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <script>
+        const ctx = document.getElementById('attendanceChart').getContext('2d');
+        const data = {
+            labels: ['Present', 'Absent'],
+            datasets: [{
+                data: [{{ stats.present_today }}, {{ stats.absent_today }}],
+                backgroundColor: ['#4caf50', '#f44336'],
+                borderWidth: 1,
+                hoverOffset: 4
+            }]
+        };
+    
+        const config = {
+            type: 'pie',
+            data: data,
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom'
+                    }
+                }
+            }
+        };
+    
+        new Chart(ctx, config);
+    </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93b13a73bd5d4519',t:'MTc0NjQ1ODQ5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

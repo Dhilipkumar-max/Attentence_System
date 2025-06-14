@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Report Issues</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="layout">
+        <nav class="sidenav">
+            <div class="logo-container">
+                <h1>Attendance System</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-qrcode"></i> Mark Attendance</a></li>
+                <li><a href="/download-menu"><i class="fas fa-download"></i> Download</a></li>
+                <li><a href="/dashboard"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+                <li><a href="/students"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="/report" class="active"><i class="fas fa-exclamation-triangle"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <header class="top-bar">
+                <h2>Report Room Issues</h2>
+            </header>
+            <main>
+                <section class="card">
+                    <h3>Add New Issue</h3>
+                    <div class="issue-form">
+                        <input type="text" id="room_input" placeholder="Enter room number (e.g., 221)">
+                        <input type="text" id="issue_input" placeholder="Enter issue (e.g., light issue)">
+                        <button onclick="addIssue()">Report Issue</button>
+                    </div>
+                    <div id="result" class="result-message"></div>
+                </section>
+                <section class="card">
+                    <h3>Reported Issues</h3>
+                    {% if issues %}
+                    <table class="issue-table">
+                        <thead>
+                            <tr>
+                                <th>S.No</th>
+                                <th>Room</th>
+                                <th>Issue</th>
+                                <th>Reported Time</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for issue in issues %}
+                            <tr>
+                                <td>{{ loop.index }}</td>
+                                <td>{{ issue.Room }}</td>
+                                <td>{{ issue.Issue }}</td>
+                                <td>{{ issue['Reported Time'] }}</td>
+                                <td>
+                                    <button class="solve-button" onclick="solveIssue({{ loop.index0 }})">
+                                        <i class="fas fa-check"></i> Solve
+                                    </button>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                    {% else %}
+                    <div class="no-data-message">
+                        No issues reported yet.
+                    </div>
+                    {% endif %}
+                </section>
+            </main>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

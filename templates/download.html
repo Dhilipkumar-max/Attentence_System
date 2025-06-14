@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Download Attendance</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="layout">
+        <nav class="sidenav">
+            <div class="logo-container">
+                <h1>Attendance System</h1>
+            </div>
+            <ul class="nav-links">
+                <li><a href="/"><i class="fas fa-qrcode"></i> Mark Attendance</a></li>
+                <li><a href="/download-menu" class="active"><i class="fas fa-download"></i> Download</a></li>
+                <li><a href="/dashboard"><i class="fas fa-chart-bar"></i> Dashboard</a></li>
+                <li><a href="/students"><i class="fas fa-users"></i> Students</a></li>
+                <li><a href="/report"><i class="fas fa-exclamation-triangle"></i> Report</a></li>
+            </ul>
+        </nav>
+
+        <div class="main-content">
+            <header class="top-bar">
+                <div class="header-content">
+                    <h2>Download Attendance Records</h2>
+                    <div class="search-container">
+                        <input type="text" id="searchDate" placeholder="Search date..." onkeyup="searchDates()">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                </div>
+            </header>
+            <main>
+                <section class="card">
+                    <div class="download-list">
+                        {% for date in dates %}
+                        <div class="download-item">
+                            <span class="date">{{ date }}</span>
+                            <a href="{{ url_for('download', date=date) }}" class="download-button">
+                                <i class="fas fa-file-excel"></i> Download
+                            </a>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </section>
+            </main>
+        </div>
+    </div>
+    <!-- Add this before closing body tag -->
+        <script>
+            function searchDates() {
+                const input = document.getElementById('searchDate');
+                const filter = input.value.toLowerCase();
+                const items = document.getElementsByClassName('download-item');
+
+                for (let item of items) {
+                    const dateText = item.querySelector('.date').textContent.toLowerCase();
+                    item.style.display = dateText.includes(filter) ? '' : 'none';
+                }
+            }
+        </script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'93b13a73ca3553cc',t:'MTc0NjQ1ODQ5NC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>
