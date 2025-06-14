@@ -2,7 +2,7 @@
 
 ## Overview
 This is a web-based Attendance Management System built with Flask and Pandas. It allows for easy attendance marking, reporting, and dashboard visualization for students. Attendance data is stored in Excel files, and the system provides a simple interface for both marking and reviewing attendance, as well as reporting and resolving issues.
-
+![Todo List Dashboard](https://i.postimg.cc/rpZFNVcn/image.png)
 ## Features
 - Mark attendance by student registration number
 - Dashboard with total, present, and absent student counts
